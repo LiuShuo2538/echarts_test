@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+       http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd">
+
+
+    <!--启用spring注解-->
+    <context:annotation-config/>
+    <!--启用组件扫描-->
+    <context:component-scan base-package="com.wiseweb.core.controller"/>
+    <!--启用mvc注解，并使用自定义Bean校验，启用矩阵变量-->
+    <mvc:annotation-driven />
+
+    <!--指定资源文件，避免资源文件被MVC拦截-->
+    <mvc:resources mapping="/js/**" location="/WEB-INF/resources/js/"><mvc:resource-chain resource-cache="true"/></mvc:resources>
+
+    <mvc:default-servlet-handler />
+
+    <!-- 默认的视图解析器 在上边的解析错误时使用 (默认使用html)- -->
+    <bean id="defaultViewResolver"
+          class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+        <property name="viewClass"	value="org.springframework.web.servlet.view.JstlView" />
+        <property name="contentType" value="text/html" />
+        <property name="prefix" value="/WEB-INF/jsp/" />
+        <property name="suffix" value=".jsp" />
+    </bean>
+ </beans>
