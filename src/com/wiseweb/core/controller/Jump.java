@@ -5,7 +5,9 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
 
+import javax.servlet.http.HttpSession;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -18,13 +20,13 @@ public class Jump {
 
     @RequestMapping(value = {"two"}, method = RequestMethod.GET)
     public String m1(ModelMap modelMap) throws SigarException {
-        Sigar sigar = new Sigar();
-        Object[] details = getDetails(sigar);
-        modelMap.addAttribute("arr",  details);
+//        Sigar sigar = new Sigar();
+//        Object[] details = getDetails(sigar);
+//        modelMap.addAttribute("arr",  details);
         return "/Statistics";
     }
 
-    public  Object [] getDetails(org.hyperic.sigar.Sigar sigar) throws SigarException {
+    public  String [] getDetails(org.hyperic.sigar.Sigar sigar) throws SigarException {
 //        info = sigar.getCpuInfoList()[0];
         CpuPerc cpuPerc = sigar.getCpuPerc();//cpu使用率
 //        timer = sigar.getCpu();
@@ -50,15 +52,37 @@ public class Jump {
         String d ="当前内存剩余量："+freeM;
         String e ="时间："+dateFormat.format(now);
 
+//        System.out.println("CPU："+cpuPerc.getCombined());
+//        System.out.println("内存总量："+totalM);
+//        System.out.println("当前内存使用量："+usedM);
+//        System.out.println("当前内存剩余量："+freeM);
+//        System.out.println("时间："+dateFormat.format(now));
+        return new String[]{cpuPerc.getCombined()+"",b,c,d,e,"100"};
+    }
+    @RequestMapping(value = {"four"}, method = RequestMethod.GET)
+    public String m4(ModelMap modelMap) throws SigarException {
+//        Sigar sigar = new Sigar();
+//        Object[] details = getDetails(sigar);
+//        modelMap.addAttribute("arr",  details);
+        return "/hahaha";
+    }
+    @RequestMapping(value = {"five"}, method = RequestMethod.GET)
+    public String m5(ModelMap modelMap) throws SigarException {
+//        Sigar sigar = new Sigar();
+//        Object[] details = getDetails(sigar);
+//        modelMap.addAttribute("arr",  details);
+        return "/five";
+    }
 
+    @RequestMapping(value = "cpu.do", method = RequestMethod.GET)
+    @ResponseBody
+    public String showLine(ModelMap modelMap, HttpSession httpSession) throws Exception{
 
-
-
-        System.out.println("CPU："+cpuPerc.getCombined());
-        System.out.println("内存总量："+totalM);
-        System.out.println("当前内存使用量："+usedM);
-        System.out.println("当前内存剩余量："+freeM);
-        System.out.println("时间："+dateFormat.format(now));
-        return new Object[]{(int)(cpuPerc.getCombined()*100),b,c,d,e,100};
+        Sigar sigar = new Sigar();
+        String[] details = getDetails(sigar);
+        String cpuInfo = details[0];
+        modelMap.addAttribute("arr",  details);
+        System.out.println(cpuInfo);
+        return cpuInfo;
     }
 }

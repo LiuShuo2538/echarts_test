@@ -1,74 +1,163 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <html>
+<!DOCTYPE html>
 <head>
-    <title>统计</title>
     <meta charset="utf-8">
-    <script src="../resources/js/jquery-1.9.0.min.js" type="text/javascript"></script>
-    <script src="../resources/js/echarts-all.js" type="text/javascript"></script>
+    <title>ECharts</title>
+
 </head>
 <body>
-12345
-<c:forEach items="${arr}" var="arr">
-    <th>${arr}</th>
-</c:forEach>
-<!-- 为 ECharts 准备一个具备大小（宽高）的 DOM -->
-<div id="main" style="width: 600px;height:400px;">123</div>
+<!-- 为ECharts准备一个具备大小（宽高）的Dom -->
+<div id="main" style="height:400px"></div>
+<!-- ECharts单文件引入 -->
+<script src="../resources/js/echarts-2.2.7/build/dist/echarts.js" type="text/javascript"></script>
 <script type="text/javascript">
-    // 基于准备好的dom，初始化echarts实例
-    var myChart = echarts.init(document.getElementById('main'));
-
-    // 指定图表的配置项和数据
-    var option = {
-        title: {
-            text: 'ECharts 入门示例'
-        },
-        tooltip: {},
-        legend: {
-            data:['销量']
-        },
-        xAxis: {
-            data: ["CPU","羊毛衫","雪纺衫","裤子","高跟鞋","袜子"]
-        },
-        yAxis: {},
-        series: [{
-            name: '销量',
-            type: 'bar',
-            data: [${arr[0]}, 20, 36, 10, 10, 20]
-        }]
-    };
-
-    // 使用刚指定的配置项和数据显示图表。
-//    myChart.setOption(option);
-    function aaa() {
-        $.ajax({
-            type: "GET",
-            url: "test.json",
-            data: {username:$("#username").val(), content:$("#content").val()},
-            dataType: "json",
-            success: function(data){
-                $('#resText').empty();   //清空resText里面的所有内容
-                var html = '';
-                $.each(data, function(commentIndex, comment){
-                    html += '<div class="comment"><h6>' + comment['username']
-                            + ':</h6><p class="para"' + comment['content']
-                            + '</p></div>';
-                });
-                $('#resText').html(html);
-            }
-        });
-
-    }
-
-    setInterval($.ajax({
-        type: "GET",
-        url: "test.json",
-        data: {username:$("#username").val(), content:$("#content").val()},
-        dataType: "json",
-        success: function(){
-            myChart.setOption(option)
+    // 路径配置
+    require.config({
+        paths: {
+            echarts: '../resources/js/echarts-2.2.7/build/dist'
         }
-    }),1000);
+    });
+
+    // 使用
+    require(
+            [
+                'echarts',
+                'echarts/chart/line' // 使用柱状图就加载bar模块，按需加载
+            ],
+            function (ec) {
+                // 基于准备好的dom，初始化echarts图表
+                var myChart = ec.init(document.getElementById('main'));
+
+                option = {
+                    title : {
+                        text: '动态数据',
+                        subtext: '纯属虚构'
+                    },
+                    tooltip : {
+                        trigger: 'axis'
+                    },
+                    legend: {
+                        data:['最新成交价', '预购队列']
+                    },
+                    toolbox: {
+                        show : true,
+                        feature : {
+                            mark : {show: true},
+                            dataView : {show: true, readOnly: false},
+                            magicType : {show: true, type: ['line', 'bar']},
+                            restore : {show: true},
+                            saveAsImage : {show: true}
+                        }
+                    },
+                    dataZoom : {
+                        show : false,
+                        start : 0,
+                        end : 100
+                    },
+                    xAxis : [
+                        {
+                            type : 'category',
+                            boundaryGap : true,
+                            data : (function (){
+                                var now = new Date();
+                                var res = [];
+                                var len = 10;
+                                while (len--) {
+                                    res.unshift(now.toLocaleTimeString().replace(/^\D*/,''));
+                                    now = new Date(now - 2000);
+                                }
+                                return res;
+                            })()
+                        },
+                        {
+                            type : 'category',
+                            boundaryGap : true,
+                            data : (function (){
+                                var res = [];
+                                var len = 10;
+                                while (len--) {
+                                    res.push(len + 1);
+                                }
+                                return res;
+                            })()
+                        }
+                    ],
+                    yAxis : [
+                        {
+                            type : 'value',
+                            scale: true,
+                            name : '价格',
+                            boundaryGap: [0.2, 0.2]
+                        },
+                        {
+                            type : 'value',
+                            scale: true,
+                            name : '预购量',
+                            boundaryGap: [0.2, 0.2]
+                        }
+                    ],
+                    series : [
+                        {
+                            name:'预购队列',
+                            type:'bar',
+                            xAxisIndex: 1,
+                            yAxisIndex: 1,
+                            data:(function (){
+                                var res = [];
+                                var len = 10;
+                                while (len--) {
+                                    res.push(Math.round(Math.random() * 1000));
+                                }
+                                return res;
+                            })()
+                        },
+                        {
+                            name:'最新成交价',
+                            type:'line',
+                            data:(function (){
+                                var res = [];
+                                var len = 10;
+                                while (len--) {
+                                    res.push((Math.random()*10 + 5).toFixed(1) - 0);
+                                }
+                                return res;
+                            })()
+                        }
+                    ]
+                };
+                var lastData = 11;
+                var axisData;
+                clearInterval(timeTicket);
+                timeTicket = setInterval(function (){
+                    lastData += Math.random() * ((Math.round(Math.random() * 10) % 2) == 0 ? 1 : -1);
+                    lastData = lastData.toFixed(1) - 0;
+                    axisData = (new Date()).toLocaleTimeString().replace(/^\D*/,'');
+
+                    // 动态数据接口 addData
+                    myChart.addData([
+                        [
+                            0,        // 系列索引
+                            Math.round(Math.random() * 1000), // 新增数据
+                            true,     // 新增数据是否从队列头部插入
+                            false     // 是否增加队列长度，false则自定删除原有数据，队头插入删队尾，队尾插入删队头
+                        ],
+                        [
+                            1,        // 系列索引
+                            lastData, // 新增数据
+                            false,    // 新增数据是否从队列头部插入
+                            false,    // 是否增加队列长度，false则自定删除原有数据，队头插入删队尾，队尾插入删队头
+                            axisData  // 坐标轴标签
+                        ]
+                    ]);
+                }, 2100);
+
+
+//                // 为echarts对象加载数据
+//                myChart.setOption(option);
+            }
+    );
 </script>
 </body>
 </html>

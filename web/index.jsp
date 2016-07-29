@@ -11,8 +11,8 @@
 <head>
     <title>E_charts</title>
     <meta charset="utf-8">
-    <script src="../resources/js/jquery-1.9.0.min.js" type="text/javascript"></script>
-    <script src="../resources/js/echarts-all.js" type="text/javascript"></script>
+    <script src="resources/js/jquery-1.9.0.min.js" type="text/javascript"></script>
+    <script src="resources/js/echarts.js" type="text/javascript"></script>
 </head>
 <body>
 1
@@ -20,9 +20,14 @@
     <th>${arr}</th>
 </c:forEach>
 <a href="${context}/one/two.do">W3School</a>
+<a href="${context}/one/four.do">222222</a>
+<a href="${context}/one/five.do">555555</a>
+
 <div id="main" style="width: 600px;height:400px;">123</div>
 <script type="text/javascript">
+
     var myChart = echarts.init(document.getElementById('main'));
+
 
     function randomData() {
         now = new Date(+now + oneDay);
@@ -35,16 +40,19 @@
             ]
         }
     }
-
+    var app = {};
     var data = [];
-    var now = +new Date(1997, 9, 3);
-    var oneDay = 24 * 3600 * 1000;
+    var now = +new Date();
+    var oneDay = 1000;
     var value = Math.random() * 1000;
-    for (var i = 0; i < 1000; i++) {
-        data.push(randomData());
-    }
+
+
 
     option = {
+        grid:{
+            borderColor:'red'
+        },
+
         title: {
             text: '动态数据 + 时间坐标轴'
         },
@@ -53,19 +61,32 @@
             formatter: function (params) {
                 params = params[0];
                 var date = new Date(params.name);
-                return ${arr}+ '/'+date.getDate() + '/' + (date.getMonth() + 1) + '/' + date.getFullYear() + ' : ' + params.value[1];
+                return  date.toLocaleTimeString().replace(/^\D*/,'') + ' : ' + params.value[1];
             },
             axisPointer: {
                 animation: false
             }
         },
         xAxis: {
-            type: 'time',
+
+            type: 'category',
             splitLine: {
                 show: false
-            }
+            },
+            data:(function (){
+                var now = new Date();
+                var res = [];
+                var len = 10;
+                while (len--) {
+                    res.unshift(now.toLocaleTimeString().replace(/^\D*/,''));
+                    now = new Date(now - 2000);
+                }
+                return res;
+            })()
         },
         yAxis: {
+            name:'纵',
+//            show:false,
             type: 'value',
             boundaryGap: [0, '100%'],
             splitLine: {
@@ -80,8 +101,10 @@
             data: data
         }]
     };
-
-//    app.timeTicket =setInterval(function () {
+    for (var i = 0; i < 1000; i++) {
+        data.push(randomData());
+    }
+//    app.timeTicket = setInterval(function () {
 //
 //        for (var i = 0; i < 5; i++) {
 //            data.shift();
@@ -93,12 +116,22 @@
 //            }]
 //        });
 //    }, 1000);
-    setInterval(myChart.setOption(option),1000);
+    timerId = setInterval(function () {
+        for (var i = 0; i < 5; i++) {
+            data.shift();
+            data.push(randomData());
+        }
 
-
+        myChart.setOption(option);
+        myChart.setOption({
+            series: [{
+                data: data
+            }]
+        });
+//        alert(data)
+    }, 1000);
 
 </script>
-
 
 
 </body>
